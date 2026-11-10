@@ -279,7 +279,7 @@
       showSuccess(t('success'), entry);
     } catch (err) {
       if (isCodeErr(err)) { store.del('entry_code'); showPinScreen(t('pin_changed')); }
-      else if (err.message === 'NOT_CONFIGURED') { showMsg(t('not_configured'), 'err'); }
+      else if (err.message === 'NOT_CONFIGURED') { showMsg(t('not_configured') + ' — ' + RM.configProblem(), 'err'); }
       else if (isNetErr(err)) { await queueEntry(entry, photo); showSuccess(t('saved_offline'), entry); }
       else { showMsg(t('err_generic') + ' (' + (err.message || err) + ')', 'err'); }
     } finally { setBusy(false); }
@@ -344,11 +344,17 @@
   $('syncBtn').addEventListener('click', () => syncPending(true));
   window.addEventListener('online', () => syncPending(false));
 
+  function showConfigProblem() {
+    const p = RM.configProblem(); const w = $('configWarn');
+    w.textContent = p ? '⚠️ ' + t('not_configured') + ' — ' + p : ''; w.classList.toggle('hidden', !p);
+  }
+  document.addEventListener('langchange', showConfigProblem);
+
   // ---------- init ----------
   function init() {
     RM.applyI18n(); renderLangBtn();
     $('districtName').textContent = cfg.DISTRICT_NAME || '';
-    if (!RM.isConfigured()) $('configWarn').classList.remove('hidden');
+    showConfigProblem();
     const p = store.get('prefs', {});
     ['staff_name', 'staff_mobile', 'beat_no', 'beat_name'].forEach(k => { if (p[k]) $(k).value = p[k]; });
     renderPS(); renderBeatPick(); renderCats(); renderSens(); renderGps(); renderPending();

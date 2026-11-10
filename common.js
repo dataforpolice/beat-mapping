@@ -196,9 +196,35 @@
     return !!(cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY &&
       !cfg.SUPABASE_URL.includes('YOUR-PROJECT') && !cfg.SUPABASE_ANON_KEY.includes('YOUR-'));
   }
+  // Exact reason why the app is not ready (shown on screen to help setup)
+  function configProblem() {
+    const H = (en, hi) => (lang === 'hi' ? hi : en);
+    if (!window.APP_CONFIG) return H(
+      'config.js did not load or has a typo (missing quote " or comma ,). Open config.js on GitHub and compare with the sample.',
+      'config.js लोड नहीं हुई या उसमें टाइपिंग की गलती है (कोई " या , छूट गया है)। GitHub पर config.js खोलकर नमूने से मिलाएँ।');
+    const url = String(cfg.SUPABASE_URL || '').trim(), key = String(cfg.SUPABASE_ANON_KEY || '').trim();
+    if (!url || url.includes('YOUR-PROJECT')) return H(
+      'SUPABASE_URL is still the sample value. Paste your Project URL (https://xxxx.supabase.co) in config.js.',
+      'SUPABASE_URL अभी भी नमूने वाला है। config.js में अपना Project URL (https://xxxx.supabase.co) डालें।');
+    if (!/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(url)) return H(
+      'SUPABASE_URL looks wrong: "' + url + '". It must be exactly like https://abcdxyz.supabase.co (nothing after .co).',
+      'SUPABASE_URL गलत लग रहा है: "' + url + '"। यह बिल्कुल https://abcdxyz.supabase.co जैसा होना चाहिए (.co के बाद कुछ नहीं)।');
+    if (!key || key.includes('YOUR-')) return H(
+      'SUPABASE_ANON_KEY is still the sample value. Paste the anon / publishable key in config.js.',
+      'SUPABASE_ANON_KEY अभी भी नमूने वाली है। config.js में anon / publishable key डालें।');
+    if (/^sb_secret_/.test(key) || /service_role/.test(atobSafe(key.split('.')[1]))) return H(
+      'You pasted the SECRET / service_role key. Never use it here! Use the anon / publishable key instead.',
+      'आपने SECRET / service_role key डाल दी है। इसे यहाँ कभी न डालें! इसकी जगह anon / publishable key डालें।');
+    if (!window.supabase) return H(
+      'Supabase library could not load. Check internet and reload the page.',
+      'Supabase लाइब्रेरी लोड नहीं हुई। इंटरनेट जाँचें और पेज रीलोड करें।');
+    return '';
+  }
+  function atobSafe(s) { try { return atob((s || '').replace(/-/g, '+').replace(/_/g, '/')); } catch (e) { return ''; } }
+
   function getClient(opts) {
-    if (!isConfigured() || !window.supabase) return null;
-    return window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, opts || {});
+    if (configProblem()) return null;
+    return window.supabase.createClient(String(cfg.SUPABASE_URL).trim().replace(/\/$/, ''), String(cfg.SUPABASE_ANON_KEY).trim(), opts || {});
   }
 
   function esc(s) {
@@ -207,7 +233,7 @@
 
   window.RM = {
     cfg, CATEGORIES, SENSITIVITY, store, t, label, otherLabel, applyI18n, setLang,
-    catById, sensById, getClient, isConfigured, esc,
+    catById, sensById, getClient, isConfigured, configProblem, esc,
     get lang() { return lang; }
   };
 })();

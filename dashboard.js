@@ -23,7 +23,11 @@
   async function init() {
     RM.applyI18n(); renderLangBtn();
     $('districtName').textContent = cfg.DISTRICT_NAME || '';
-    if (!sb) { $('configWarn').classList.remove('hidden'); return; }
+    if (!sb) {
+      const show = () => { $('configWarn').textContent = '⚠️ ' + t('not_configured') + ' — ' + RM.configProblem(); };
+      show(); document.addEventListener('langchange', show);
+      $('configWarn').classList.remove('hidden'); return;
+    }
     const { data } = await sb.auth.getSession();
     if (data && data.session) startApp(data.session); else showLogin();
     sb.auth.onAuthStateChange((ev) => { if (ev === 'SIGNED_OUT') showLogin(); });
