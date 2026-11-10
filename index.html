@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#1e3a8a">
+<title>Beat Resource Mapping / बीट संसाधन मानचित्रण</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="form-page">
+
+<header class="topbar">
+  <div class="brand">
+    <div class="badge">🚔</div>
+    <div>
+      <div class="title" data-i18n="app_title"></div>
+      <div class="sub" id="districtName"></div>
+    </div>
+  </div>
+  <button type="button" class="lang-btn" id="langBtn"></button>
+</header>
+
+<main class="wrap">
+  <div id="configWarn" class="alert alert-err hidden" data-i18n="not_configured"></div>
+
+  <div id="pendingBar" class="alert alert-warn hidden">
+    <span><b id="pendingCount">0</b> <span data-i18n="pending"></span></span>
+    <button type="button" id="syncBtn" class="btn btn-sm" data-i18n="sync_now"></button>
+  </div>
+
+  <!-- ================= PIN SCREEN ================= -->
+  <form id="pinView" class="card pin-card hidden" novalidate>
+    <div class="pin-lock">🔒</div>
+    <h2 data-i18n="pin_title"></h2>
+    <p class="muted" data-i18n="pin_sub"></p>
+    <input id="pinInput" type="password" inputmode="numeric" autocomplete="off" maxlength="12" class="pin-input" placeholder="• • • •">
+    <div id="pinMsg" class="alert alert-err hidden"></div>
+    <button type="submit" id="pinBtn" class="btn btn-primary btn-block btn-xl" data-i18n="pin_open"></button>
+  </form>
+
+  <div id="mainView" class="hidden">
+  <details class="card help">
+    <summary data-i18n="help_title"></summary>
+    <ol>
+      <li data-i18n="help_1"></li>
+      <li data-i18n="help_2"></li>
+      <li data-i18n="help_3"></li>
+      <li data-i18n="help_4"></li>
+      <li data-i18n="help_5"></li>
+    </ol>
+  </details>
+
+  <!-- ================= SUCCESS VIEW ================= -->
+  <section id="successView" class="card success hidden">
+    <div class="big-tick">✅</div>
+    <p id="successMsg"></p>
+    <p class="muted" id="successWhat"></p>
+    <p class="muted"><span data-i18n="today_count"></span> <b id="todayCount">0</b></p>
+    <button type="button" id="addAnother" class="btn btn-primary btn-block" data-i18n="add_another"></button>
+  </section>
+
+  <!-- ================= FORM ================= -->
+  <form id="form" novalidate>
+    <section class="card">
+      <h2 data-i18n="sec_staff"></h2>
+      <label class="field"><span><span data-i18n="staff_name"></span> <i class="req">*</i></span>
+        <input id="staff_name" autocomplete="name" data-i18n-ph="staff_name_ph"></label>
+      <label class="field"><span data-i18n="staff_mobile"></span>
+        <input id="staff_mobile" inputmode="tel" autocomplete="tel"></label>
+    </section>
+
+    <section class="card">
+      <h2 data-i18n="sec_beat"></h2>
+      <label class="field"><span><span data-i18n="ps"></span> <i class="req">*</i></span>
+        <select id="ps_name"></select></label>
+      <label class="field hidden" id="beatPickWrap"><span><span data-i18n="beat_no"></span> <i class="req">*</i></span>
+        <select id="beat_pick"></select></label>
+      <div class="row2" id="beatFreeWrap">
+        <label class="field"><span><span data-i18n="beat_no"></span> <i class="req">*</i></span>
+          <input id="beat_no" inputmode="text" autocomplete="off"></label>
+        <label class="field"><span data-i18n="beat_name"></span>
+          <input id="beat_name" autocomplete="off"></label>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2><span data-i18n="sec_cat"></span> <i class="req">*</i></h2>
+      <div class="cat-grid" id="catGrid"></div>
+    </section>
+
+    <section class="card">
+      <h2 data-i18n="sec_details"></h2>
+      <label class="field"><span><span data-i18n="place_name"></span> <i class="req">*</i></span>
+        <input id="place_name" data-i18n-ph="place_name_ph" autocomplete="off"></label>
+      <label class="field"><span data-i18n="address"></span>
+        <input id="address" data-i18n-ph="address_ph" autocomplete="off"></label>
+      <div class="row2">
+        <label class="field"><span data-i18n="contact_person"></span>
+          <input id="contact_person" autocomplete="off"></label>
+        <label class="field"><span data-i18n="contact_phone"></span>
+          <input id="contact_phone" inputmode="tel" autocomplete="off"></label>
+      </div>
+      <div class="field"><span data-i18n="sensitivity"></span>
+        <div class="seg" id="sensSeg"></div></div>
+      <label class="field"><span data-i18n="remarks"></span>
+        <textarea id="remarks" rows="3" data-i18n-ph="remarks_ph"></textarea></label>
+    </section>
+
+    <section class="card">
+      <h2><span data-i18n="sec_loc"></span> <i class="req">*</i></h2>
+      <div class="btn-row">
+        <button type="button" id="gpsBtn" class="btn btn-primary" data-i18n="get_gps"></button>
+        <button type="button" id="mapBtn" class="btn" data-i18n="pick_map"></button>
+      </div>
+      <div id="gpsStatus" class="gps-status"></div>
+      <div id="pickMap" class="pick-map hidden"></div>
+      <p class="muted small hidden" id="gpsTip" data-i18n="gps_tip"></p>
+    </section>
+
+    <section class="card">
+      <h2 data-i18n="sec_photo"></h2>
+      <label class="btn btn-block photo-btn">
+        <span data-i18n="take_photo"></span>
+        <input type="file" id="photoInput" accept="image/*" capture="environment" hidden>
+      </label>
+      <div id="photoBox" class="photo-box hidden">
+        <img id="photoPreview" alt="">
+        <button type="button" id="photoRemove" class="btn btn-sm btn-danger" data-i18n="remove_photo"></button>
+      </div>
+    </section>
+
+    <div id="formMsg" class="alert hidden"></div>
+    <button type="submit" id="submitBtn" class="btn btn-success btn-block btn-xl" data-i18n="submit"></button>
+    <p class="center"><button type="button" id="lockBtn" class="link-btn" data-i18n="lock"></button></p>
+    <div class="spacer"></div>
+  </form>
+  </div>
+</main>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="common.js"></script>
+<script src="form.js"></script>
+</body>
+</html>

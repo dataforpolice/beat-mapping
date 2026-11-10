@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#1e3a8a">
+<title>Resource Mapping Dashboard / संसाधन मानचित्रण डैशबोर्ड</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="dash-page">
+
+<header class="topbar">
+  <div class="brand">
+    <div class="badge">🚔</div>
+    <div>
+      <div class="title" data-i18n="dash_title"></div>
+      <div class="sub" id="districtName"></div>
+    </div>
+  </div>
+  <div class="top-actions">
+    <span class="muted small hidden" id="userEmail"></span>
+    <button type="button" class="lang-btn" id="langBtn"></button>
+    <button type="button" class="lang-btn hidden" id="logoutBtn" data-i18n="logout"></button>
+  </div>
+</header>
+
+<div id="configWarn" class="alert alert-err hidden wrap" data-i18n="not_configured"></div>
+
+<!-- ============ LOGIN ============ -->
+<section id="loginView" class="wrap hidden">
+  <form id="loginForm" class="card login-card">
+    <h2 data-i18n="login_title"></h2>
+    <label class="field"><span data-i18n="email"></span><input id="email" type="email" autocomplete="username" required></label>
+    <label class="field"><span data-i18n="password"></span><input id="password" type="password" autocomplete="current-password" required></label>
+    <div id="loginMsg" class="alert alert-err hidden"></div>
+    <button type="submit" class="btn btn-primary btn-block" data-i18n="login"></button>
+  </form>
+</section>
+
+<!-- ============ APP ============ -->
+<section id="appView" class="hidden">
+  <div class="filters">
+    <select id="fPs"></select>
+    <select id="fBeat"></select>
+    <select id="fCat"></select>
+    <select id="fSens"></select>
+    <label class="date-f"><span data-i18n="date_from"></span><input type="date" id="fFrom"></label>
+    <label class="date-f"><span data-i18n="date_to"></span><input type="date" id="fTo"></label>
+    <input type="search" id="fQ" data-i18n-ph="search_ph">
+    <button type="button" class="btn btn-sm" id="clearBtn" data-i18n="clear"></button>
+    <button type="button" class="btn btn-sm" id="refreshBtn" data-i18n="refresh"></button>
+    <button type="button" class="btn btn-sm btn-primary" id="csvBtn" data-i18n="export_csv"></button>
+    <button type="button" class="btn btn-sm" id="pinBtn" data-i18n="staff_pin"></button>
+  </div>
+
+  <div id="dashMsg" class="alert hidden" style="margin:10px 14px"></div>
+
+  <div class="stats" id="stats"></div>
+  <div class="chips" id="catChips"></div>
+
+  <div class="dash-grid">
+    <div class="card map-card"><div id="map"></div></div>
+    <div class="card summary-card">
+      <h3 data-i18n="summary_title"></h3>
+      <div class="table-scroll" id="summary"></div>
+    </div>
+  </div>
+
+  <div class="card records-card">
+    <h3><span data-i18n="records_title"></span> (<span id="recCount">0</span>)</h3>
+    <p class="muted small hidden" id="recNote" data-i18n="showing_first"></p>
+    <div class="table-scroll" id="records"></div>
+  </div>
+</section>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="common.js"></script>
+<script src="dashboard.js"></script>
+</body>
+</html>
